@@ -53,12 +53,15 @@ jobs:
           cd "$HOME/twrp10"
           repo init -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_omni.git \
             -b twrp-10.0-deprecated --depth=1
-          repo sync -c -j4 --force-sync --no-clone-bundle --no-tags
+          repo sync -j4 --force-sync --no-clone-bundle
           du -sh .repo .
           df -h /
           echo "--- project presence ---"
-          ls -d test/vts system/bpf 2>&1 || true
-          grep -rl "VtsHalDriverDefaults" test/vts system/bpf 2>/dev/null | head -5 || true
+          for p in test/vts system/bpf external/junit external/hamcrest external/guava external/curl frameworks/opt/telephony prebuilts/misc; do
+            if [ -d "$p" ]; then echo "PRESENT $p"; else echo "MISSING $p"; fi
+          done
+          echo "project_count=$(repo list 2>/dev/null | wc -l)"
+          repo list 2>/dev/null | grep -E 'system/bpf|external/junit|external/guava|frameworks/opt/telephony' || true
 
       - name: Build recoveryimage
         run: |
