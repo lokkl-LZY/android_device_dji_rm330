@@ -58,7 +58,10 @@ BOARD_MKBOOTIMG_ARGS := --header_version 1
 
 # The stock dtbo lives in its own partition and is loaded by ABL; do not pack a
 # DTB into the recovery image.
-BOARD_INCLUDE_RECOVERY_DTBO := false
+# NOTE: leave this variable unset (do NOT set it to "false"): build/make tests it
+# with $(if $(BOARD_INCLUDE_RECOVERY_DTBO),...) so any non-empty value, including
+# "false", appends an empty --recovery_dtbo argument and mkbootimg fails.
+# BOARD_INCLUDE_RECOVERY_DTBO :=
 
 # ------------------------------------------------------------ partition layout
 # Sizes come from backup_manifest.xml (last_lba - first_lba + 1) * 512.
