@@ -56,6 +56,9 @@ jobs:
           repo sync -c -j4 --force-sync --no-clone-bundle --no-tags
           du -sh .repo .
           df -h /
+          echo "--- project presence ---"
+          ls -d test/vts system/bpf 2>&1 || true
+          grep -rl "VtsHalDriverDefaults" test/vts system/bpf 2>/dev/null | head -5 || true
 
       - name: Build recoveryimage
         run: |

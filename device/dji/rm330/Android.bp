@@ -1,0 +1,18 @@
+// Minimal stubs for defaults that the TWRP minimal manifest does not always
+// provide (their defining projects live in test/vts and system/bpf groups).
+// Recovery builds do not compile the VTS/bcc modules, but soong still requires
+// every `defaults:` reference to resolve during analysis.
+cc_defaults {
+    name: "VtsHalDriverDefaults",
+    cflags: ["-Wno-error"],
+}
+
+cc_defaults {
+    name: "VtsHalProfilerDefaults",
+    cflags: ["-Wno-error"],
+}
+
+cc_defaults {
+    name: "bpf_defaults",
+    cflags: ["-Wno-error"],
+}
