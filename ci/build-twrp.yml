@@ -1,0 +1,64 @@
+name: Build TWRP recovery (RM330)
+
+# Requires a SELF-HOSTED Linux runner with >= 80 GB free disk and 8+ GB RAM.
+# GitHub-hosted runners (~14 GB free) cannot hold an AOSP 10 tree.
+on:
+  workflow_dispatch:
+    inputs:
+      jobs:
+        description: "Parallel build jobs"
+        required: false
+        default: "8"
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux]
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Host check
+        run: |
+          uname -a
+          echo "cpus: $(nproc)"
+          free -h
+          df -h "$HOME" "$GITHUB_WORKSPACE"
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            bc bison build-essential ccache curl flex g++-multilib gcc-multilib \
+            git gnupg gperf imagemagick lib32ncurses5-dev lib32readline-dev \
+            lib32z1-dev liblz4-tool libncurses5 libncurses5-dev libsdl1.2-dev \
+            libssl-dev libxml2 libxml2-utils lzop pngcrush rsync schedtool \
+            squashfs-tools xsltproc zip zlib1g-dev python3 python-is-python3 \
+            openjdk-8-jdk
+
+      - name: Repo init and sync
+        run: |
+          git config --global user.name "TWRP CI"
+          git config --global user.email "twrp-ci@localhost"
+          mkdir -p "$HOME/twrp10"
+          cd "$HOME/twrp10"
+          repo init -u https://github.com/minimal-manifest-twrp/platform_manifest_twrp_omni.git \
+            -b twrp-10.0-deprecated --depth=1
+          repo sync -j"${{ inputs.jobs }}" --force-sync --no-clone-bundle --no-tags
+
+      - name: Build recovery image
+        run: |
+          cd "$HOME/twrp10"
+          mkdir -p device/dji
+          cp -r "$GITHUB_WORKSPACE/device/dji/rm330" device/dji/rm330
+          source build/envsetup.sh
+          lunch twrp_rm330-eng
+          mka recoveryimage -j"${{ inputs.jobs }}"
+          ls -l out/target/product/rm330/recovery.img
+          cp out/target/product/rm330/recovery.img "$GITHUB_WORKSPACE/recovery-rm330.img"
+
+      - name: Upload recovery image
+        uses: actions/upload-artifact@v4
+        with:
+          name: twrp-recovery-rm330
+          path: recovery-rm330.img
+          if-no-files-found: error

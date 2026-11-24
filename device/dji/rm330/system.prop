@@ -1,0 +1,5 @@
+# Recovery build.prop additions — DJI RC RM330
+# Keep this file small: values that must exist before the real /system is mounted.
+ro.hardware=qcom
+ro.board.platform=msm8953
+ro.sf.lcd_density=400

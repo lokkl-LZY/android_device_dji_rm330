@@ -1,0 +1,53 @@
+# TWRP recovery fstab — DJI RC RM330 (msm8953)
+#
+# Derived from vendor/etc/fstab.qcom (extracted read-only from vendor.img):
+#   system   /            ext4  ro,barrier=1,discard           wait,avb
+#   userdata /data        ext4  noatime,nosuid,nodev,...       wait,fileencryption=ice,quota,reservedsize=128M
+#   cache    /cache       ext4  noatime,nosuid,nodev,barrier=1 wait
+#   modem    /vendor/firmware_mnt vfat ...                     wait
+#   dsp      /vendor/dsp  ext4  ro,...                         wait
+#   persist  /mnt/vendor/persist ext4 ...                      wait
+#   blackbox /blackbox    ext4  ...                            wait
+#   dji_persist /mnt/dji_persist ext4 ...                      wait
+#   config   /frp         emmc  defaults                       defaults
+#   misc     /misc        emmc  defaults                       defaults
+# There is NO metadata partition and NO vendor mount line in the stock fstab;
+# vendor is mounted here explicitly so TWRP can use /vendor for keymaster/HALs.
+#
+# Format: <mount point> <fstype> <device> [device2] [flags=...]
+# flags are ';'-separated TWRP/fs_mgr options.
+
+# system-as-root: flattened system.img mounts at partition root; the real system
+# tree is /system_root/system (stock image has real dirs /system, /vendor and
+# an /init symlink to /system/bin/init).
+# Only /system_root is listed: TWRP 10 maps "/", "/system" and "/system_root"
+# to PartitionManager.Get_Android_Root_Path(), so a second /system entry would
+# be a duplicate partition pointing at the same block device.
+/system_root    ext4    /dev/block/bootdevice/by-name/system                          flags=display="System";backup=1
+/vendor         ext4    /dev/block/bootdevice/by-name/vendor                          flags=display="Vendor";backup=1
+
+# userdata: FBE with hardware ICE. No keydirectory => default key location under
+# /data. TWRP can only decrypt if qti keymaster 4.0 is available in recovery.
+/data           ext4    /dev/block/bootdevice/by-name/userdata                        flags=display="Data";fileencryption=ice;wipeingui
+/cache          ext4    /dev/block/bootdevice/by-name/cache                           flags=display="Cache";wipeingui
+
+# firmware / calibration
+/firmware       vfat    /dev/block/bootdevice/by-name/modem                           flags=display="Firmware"
+/dsp            ext4    /dev/block/bootdevice/by-name/dsp                             flags=display="DSP"
+/persist        ext4    /dev/block/bootdevice/by-name/persist                         flags=display="Persist";backup=1
+/blackbox       ext4    /dev/block/bootdevice/by-name/blackbox                        flags=display="Blackbox"
+/dji_persist    ext4    /dev/block/bootdevice/by-name/dji_persist                     flags=display="DJI-Persist";backup=1
+/frp            emmc    /dev/block/bootdevice/by-name/config                          flags=display="FRP"
+/misc           emmc    /dev/block/bootdevice/by-name/misc                            flags=display="Misc"
+
+# Images that must be backup-able for rollback. Raw emmc entries allow dd-style
+# backup/restore. Do NOT add aboot/xbl/sbl/tz/modemst/... here — those are
+# boot-chain partitions and are deliberately out of scope.
+/boot           emmc    /dev/block/bootdevice/by-name/boot                            flags=display="Boot";backup=1
+/recovery       emmc    /dev/block/bootdevice/by-name/recovery                        flags=display="Recovery";backup=1
+/dtbo           emmc    /dev/block/bootdevice/by-name/dtbo                            flags=display="DTBO";backup=1
+/vbmeta         emmc    /dev/block/bootdevice/by-name/vbmeta                          flags=display="VBMeta";backup=1
+
+# Removable storage. eMMC is mmcblk0, microSD is mmcblk1, USB mass storage is sdX.
+/external_sd    vfat    /dev/block/mmcblk1p1    /dev/block/mmcblk1                   flags=display="MicroSD";storage;wipeingui;removable
+/usb_otg        vfat    /dev/block/sda1         /dev/block/sda                       flags=display="USB-OTG";storage;wipeingui;removable

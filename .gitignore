@@ -1,0 +1,8 @@
+# build artifacts
+out/
+*.img
+*.log
+
+# local analysis / intermediate files
+_extract/
+prebuilt_kernel_*.bin
