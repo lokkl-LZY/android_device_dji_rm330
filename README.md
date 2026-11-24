@@ -80,12 +80,10 @@ mka recoveryimage -j8
 
 ## CI
 
-`ci/build-twrp.yml` is a workflow template for a **self-hosted Linux runner**
-with ≥80 GB free disk (GitHub-hosted standard runners have ≈14 GB free and
-cannot hold an AOSP 10 tree). To enable it, copy it to
-`.github/workflows/build-twrp.yml`; pushing workflow files requires a GitHub
-token with the `workflow` scope (`gh auth refresh -s workflow`), or add it
-through the web UI.
+`.github/workflows/build-twrp.yml` builds on a standard `ubuntu-22.04` runner
+(best effort: the job frees preinstalled toolchains first). Hosted runners have
+limited disk; if the sync/build runs out of space, use `ci/build-twrp.yml` on a
+self-hosted Linux runner with ≥80 GB free disk instead.
 
 ## Flashing and rollback
 
