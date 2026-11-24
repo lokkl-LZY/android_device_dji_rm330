@@ -45,7 +45,7 @@ jobs:
       - name: Repo init and sync
         run: |
           git config --global user.name "TWRP CI"
-          git config --global user.email "twrp-ci@users.noreply.github.com"
+          git config --global user.email "twrp-ci@localhost"
           curl -s https://storage.googleapis.com/git-repo-downloads/repo -o /tmp/repo
           chmod +x /tmp/repo
           sudo mv /tmp/repo /usr/local/bin/repo
